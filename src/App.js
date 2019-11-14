@@ -1,26 +1,109 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React,{Component} from 'react';
+import './bootstrap.min.css';
+import Buscador from './componentes/Buscador';
+import Resultado from './componentes/Resultado';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+
+class App extends Component{
+
+    state = {
+      termino : 'asdf',
+      imagenes : [],
+      pagina : ''
+    }
+
+    scroll = () => {
+      const elemento = document.querySelector('.jumbotron');
+      elemento.scrollIntoView('smooth', 'start')
+    }
+
+    paginaAnterior = ()=>{
+      //Leer el state de la pagina actual
+      let pagina = this.state.pagina;
+      
+
+      //Leer si la pagina es = 1. Si es asi, ya no ir hacia atras
+      if(pagina === 1) return null;
+
+
+      //Sumar uno a la pagina actual
+      pagina--;
+
+      //Agregar el cambio al stat
+      this.setState({
+        pagina
+      }, () =>{
+        this.consultarApi();
+        this.scroll();
+      });
+
+      // console.log(pagina);
+    }
+
+    paginaSiguiente = ()=>{
+      //Leer el state de la pagina actual
+      let pagina = this.state.pagina;
+    
+      //Sumar uno a la pagina actual
+      pagina++;
+
+      //Agregar el cambio al stat
+      this.setState({
+        pagina
+      }, () =>{
+        this.consultarApi();
+        this.scroll();
+      });
+
+      // console.log(pagina);
+    }
+
+    consultarApi = () => {
+      const termino = this.state.termino;
+      const pagina = this.state.pagina;
+      const url = `https://pixabay.com/api/?key=14276716-b86af4ffd7a4d1da58853640a&q=${termino}&per_page=50&page=${pagina}`;
+      
+      //console.log(url);
+
+      fetch(url)
+        .then(respuesta => respuesta.json())
+        .then(resultado => this.setState({imagenes : resultado.hits}))
+      
+      
+    }
+
+
+    datosBusqueda = (termino) => {
+    this.setState({
+      termino : termino,
+      pagina: 1
+    }, ()=> {
+      this.consultarApi();
+    })
+  }
+
+
+  render(){
+    return (
+      <div className="container app">
+        <div className="jumbotron">
+          <p className="load text-center"> Buscador de imagenes </p>     
+          <Buscador 
+            datosBusqueda={this.datosBusqueda}
+          />
+        </div>
+        <div className="row justify-content-center">
+          <Resultado
+            imagenes={this.state.imagenes}    
+            paginaAnterior={this.paginaAnterior}    
+            paginaSiguiente={this.paginaSiguiente}
+          />
+          
+        </div>
+      </div>
+    );
+  }
 }
 
 export default App;
